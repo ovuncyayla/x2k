@@ -98,7 +98,10 @@ def create_gui():
             return
 
         if not os.path.exists(output_dirname):
-            messagebox.showwarning("Input Error", "Output directory does not exists. Creating: " + output_dirname)
+            messagebox.showwarning(
+                "Input Error",
+                "Output directory does not exists. Creating: " + output_dirname,
+            )
             try:
                 os.makedirs(output_dirname, exist_ok=True)
             except Exception as e:
@@ -109,6 +112,9 @@ def create_gui():
         global colNames, colNamesForTooltip
         colNamesForTooltip = selected_columns
 
+        linea_count = 0
+        sostegni_count = 0
+        bucket_count = 0
         for file in os.listdir(input_dirname):
             fname, ext = os.path.splitext(file)
 
@@ -135,9 +141,16 @@ def create_gui():
             df = pd.DataFrame(data, columns=colNames)
             df.fillna("NA", inplace=True)
 
-            genera_kml(df, directory)
+            counts = genera_kml(df, directory)
+            linea_count += counts[0]
+            sostegni_count += counts[1]
+            bucket_count += 1
 
-        messagebox.showinfo("Success", "Processing completed successfully!")
+        messagebox.showinfo(
+            "Success",
+            f"Processing completed successfully!\n\nBucket: {bucket_count}\nLinee: {linea_count}\nSostegni: {sostegni_count}\n",
+        )
+        root.destroy()
 
     root = tk.Tk()
     root.title("KML Generator")
@@ -186,6 +199,8 @@ def makeTooltipRow(columnName, row):
 def genera_kml(df, path):
     linee = df[GroupByColumn].unique()
     diz = {}
+    sostegni_count = 0
+    linea_count = 0
     for linea in linee:
         diz[linea] = df.loc[df[GroupByColumn] == linea]
         kml = simplekml.Kml()
@@ -230,6 +245,8 @@ def genera_kml(df, path):
             # descrizione += "<hr><b>Palificazione:</b> "+str(row["PALIFICAZIONE"])
 
             point.description = descrizione
+            sostegni_count += 1
+
         screen = kml.newscreenoverlay(name="Legenda")
         screen.icon.href = "legenda.png"
         screen.overlayxy = simplekml.OverlayXY(
@@ -239,41 +256,15 @@ def genera_kml(df, path):
             x=0, y=0, xunits=simplekml.Units.fraction, yunits=simplekml.Units.fraction
         )
         kml.save(str(path) + "/" + str(linea) + ".kml")
+        linea_count += 1
 
     df.to_excel(str(path) + "/" + "df.xlsx", index=False)
+    return (linea_count, sostegni_count)
 
 
 def main():
     info("Ciao!")
     create_gui()
-
-    # warnings.simplefilter(action="ignore", category=FutureWarning)
-    # dirname = os.path.realpath(".")
-    # global colNames, colNamesForTooltip
-    # output_dirname = os.path.join(dirname, "extract")
-    # input_dirname = os.path.join(dirname, "input")
-    #
-    # if not os.path.exists(input_dirname):
-    #     info("No file to process. Ciao ciao!")
-    #     exit()
-    #
-    # for file in os.listdir(input_dirname):
-    #     current_file = os.path.join(input_dirname, file)
-    #     info("Processing file %s", current_file)
-    #
-    #     data = pd.read_excel(current_file)
-    #     colNames = data.columns
-    #     colNamesForTooltip = data.columns
-    #     # df = pd.DataFrame(data, columns=colNames)
-    #     df = pd.DataFrame(data)
-    #     df.fillna("NA", inplace=True)
-    #
-    #     fname = file.split(os.path.extsep)[0]
-    #     directory = os.path.join(output_dirname, fname)
-    #
-    #     os.makedirs(directory, exist_ok=True)
-    #     debug("Directory: " + directory)
-    #     genera_kml(df, directory)
 
 
 if __name__ == "__main__":
