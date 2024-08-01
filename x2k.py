@@ -132,6 +132,7 @@ def main():
     info("Ciao!")
     warnings.simplefilter(action="ignore", category=FutureWarning)
     dirname = os.path.realpath(".")
+    global colNames, colNamesForTooltip
     output_dirname = os.path.join(dirname, "extract")
     input_dirname = os.path.join(dirname, "input")
 
@@ -144,7 +145,10 @@ def main():
         info("Processing file %s", current_file)
 
         data = pd.read_excel(current_file)
-        df = pd.DataFrame(data, columns=colNames)
+        colNames = data.columns
+        colNamesForTooltip = data.columns
+        # df = pd.DataFrame(data, columns=colNames)
+        df = pd.DataFrame(data)
         df.fillna("NA", inplace=True)
 
         fname = file.split(os.path.extsep)[0]
@@ -156,3 +160,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
