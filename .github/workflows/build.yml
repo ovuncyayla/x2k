@@ -1,0 +1,44 @@
+name: Build and Upload x2k
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: Build with PyInstaller
+      run: pyinstaller --onefile x2k.py
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: x2k-${{ matrix.os }}
+        path: dist/x2k.exe
+        if: ${{ matrix.os == 'windows-latest' }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: x2k-${{ matrix.os }}
+        path: dist/x2k
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+
