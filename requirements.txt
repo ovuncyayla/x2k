@@ -1,3 +1,4 @@
 pandas
 simplekml
+openpyxl
 pyinstaller

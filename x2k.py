@@ -11,6 +11,7 @@ logging.basicConfig(
 logger = logging.getLogger("x2k")
 info = logger.info
 debug = logger.debug
+error = logger.error
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 colNames = [
@@ -90,11 +91,24 @@ def create_gui():
             )
             return
 
+        debug("Input dir: %s", input_dirname)
+        debug("Output dir: %s", output_dirname)
+        if not os.path.exists(input_dirname):
+            messagebox.showwarning("Input Error", "Input directory is not valid")
+            return
+
+        if not os.path.exists(output_dirname):
+            messagebox.showwarning("Input Error", "Output directory does not exists. Creating: " + output_dirname)
+            try:
+                os.makedirs(output_dirname, exist_ok=True)
+            except Exception as e:
+                messagebox.showwarning("Error", "Could not create output directory!")
+                error(e)
+                return
+
         global colNames, colNamesForTooltip
         colNamesForTooltip = selected_columns
 
-        debug("Input dir: %s", input_dirname)
-        debug("Output dir: %s", output_dirname)
         for file in os.listdir(input_dirname):
             fname, ext = os.path.splitext(file)
 
