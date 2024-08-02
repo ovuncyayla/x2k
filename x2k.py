@@ -114,6 +114,7 @@ def create_gui():
 
         linea_count = 0
         sostegni_count = 0
+        unknown_count = 0
         bucket_count = 0
         for file in os.listdir(input_dirname):
             fname, ext = os.path.splitext(file)
@@ -144,11 +145,12 @@ def create_gui():
             counts = genera_kml(df, directory)
             linea_count += counts[0]
             sostegni_count += counts[1]
+            unknown_count += counts[2]
             bucket_count += 1
 
         messagebox.showinfo(
             "Success",
-            f"Processing completed successfully!\n\nBucket: {bucket_count}\nLinee: {linea_count}\nSostegni: {sostegni_count}\n",
+            f"Processing completed successfully!\n\nBucket: {bucket_count}\nLinee: {linea_count}\nSostegni: {sostegni_count}\nUnknown: {unknown_count}\n",
         )
         root.destroy()
 
@@ -201,6 +203,7 @@ def genera_kml(df, path):
     diz = {}
     sostegni_count = 0
     linea_count = 0
+    unknown_count = 0
     for linea in linee:
         diz[linea] = df.loc[df[GroupByColumn] == linea]
         kml = simplekml.Kml()
@@ -233,7 +236,11 @@ def genera_kml(df, path):
                     "http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png"
                 )
             else:
-                print(cell)
+                point.style.iconstyle.icon.href = (
+                    "http://maps.google.com/mapfiles/kml/pushpin/pink-pushpin.png"
+                )
+                info("%s - %s sconosciuto: %s", index, DecisionColumn, cell)
+                unknown_count += 1
 
             descrizione = ""
 
@@ -259,7 +266,7 @@ def genera_kml(df, path):
         linea_count += 1
 
     df.to_excel(str(path) + "/" + "df.xlsx", index=False)
-    return (linea_count, sostegni_count)
+    return (linea_count, sostegni_count, unknown_count)
 
 
 def main():
